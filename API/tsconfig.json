@@ -1,0 +1,22 @@
+// {
+//     "compilerOptions": {
+//         "target": "es6",
+//         "module": "commonjs",
+//         "outDir": "./dist",
+//         "rootDir": "./src",
+//         "strict": true,
+//         "esModuleInterop": true
+//     }
+// }
+
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "CommonJS",
+        "esModuleInterop": true,
+        "strict": true,
+        "outDir": "./dist",
+        "rootDir": "./src"
+    },
+    "include": ["src"]
+}
