@@ -7,25 +7,25 @@ import db from "../config/db";
 const COOKIE_NAME = "token";
 
 export async function register(req: Request, res: Response) {
-    const { username, email, oldpassword } = req.body;
+    const { username, email, password } = req.body;
 
     try {
-        if (!username && !email && !oldpassword) {
+        if (!username || !email || !password) {
             res.status(400).json({ error: "Dados faltando" });
             return;
         }
 
-        const password = await bcrypt.hash(oldpassword, SALT_ROUNDS);
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         const valid = await db("users").where({ email }).first();
 
         if (valid) {
-            res.status(400).json({ error: "Usuario já cadastrado" });
+            res.status(400).json({ error: "Usuário já cadastrado" });
             return;
         }
 
         const returnUser = await db("users")
-            .insert({ username, email, password })
+            .insert({ username, email, password: hashedPassword })
             .returning(["ID", "email"]);
 
         const user = returnUser[0];
