@@ -7,25 +7,25 @@ import db from "../config/db";
 const COOKIE_NAME = "token";
 
 export async function register(req: Request, res: Response) {
-    const { username, email, password } = req.body;
+    let { username, email, password } = req.body;
 
     try {
-        if (!username || !email || !password) {
+        if (!username && !email && !password) {
             res.status(400).json({ error: "Dados faltando" });
             return;
         }
 
-        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+        password = await bcrypt.hash(password, SALT_ROUNDS);
 
         const valid = await db("users").where({ email }).first();
 
         if (valid) {
-            res.status(400).json({ error: "Usuário já cadastrado" });
+            res.status(400).json({ error: "Usuario já cadastrado" });
             return;
         }
 
         const returnUser = await db("users")
-            .insert({ username, email, password: hashedPassword })
+            .insert({ username, email, password })
             .returning(["ID", "email"]);
 
         const user = returnUser[0];
@@ -38,7 +38,7 @@ export async function register(req: Request, res: Response) {
             httpOnly: true,
             sameSite: "strict",
             secure: false,
-        }).json({ message: "Registro realizado com sucesso" });
+        }).json({ token, message: "Registro realizado com sucesso" });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Erro interno do servidor" });
@@ -71,7 +71,7 @@ export async function login(req: Request, res: Response) {
             httpOnly: true,
             sameSite: "strict",
             secure: false,
-        }).json({ message: "Login realizado com sucesso" });
+        }).json({ token, message: "Login realizado com sucesso" });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Erro interno do servidor" });
