@@ -2,29 +2,58 @@ import React, { useState } from "react";
 import { Box, Button, Container, TextField, Typography } from "@mui/material";
 
 export const LoginForm = () => {
-    const [name, setName] = useState("");
+    const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isLogin, setIsLogin] = useState(true);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (isLogin) {
-            if (!email.trim() || !password.trim()) {
-                alert("Por favor, preencha todos os campos.");
-                return;
-            }
-            alert(`Login realizado com sucesso!\nUsuário: ${email}`);
-        } else {
-            if (!name.trim() || !email.trim() || !password.trim()) {
-                alert("Por favor, preencha todos os campos.");
-                return;
-            }
-            alert(`Registro realizado com sucesso!\nUsuário: ${name}`);
+        if (
+            (isLogin && (!email.trim() || !password.trim())) ||
+            (!isLogin &&
+                (!username.trim() || !email.trim() || !password.trim()))
+        ) {
+            alert("Por favor, preencha todos os campos.");
+            return;
         }
 
-        setName("");
+        try {
+            const url = isLogin ? "/api/login" : "/api/register";
+            const payload = isLogin
+                ? { email, password }
+                : { username, email, password };
+
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+                credentials: "include",
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error(
+                    `Erro de ${isLogin ? "login" : "registro"}:`,
+                    errorData.error
+                );
+                alert(
+                    `${isLogin ? "Login" : "Registro"} falhou: ` +
+                        errorData.error
+                );
+                return;
+            }
+
+            const data = await response.json();
+            console.log(data);
+            localStorage.setItem("token", data.token);
+        } catch (err) {
+            console.error("Erro de rede:", err);
+            alert("Erro de conexão com o servidor.");
+        }
+
+        setUsername("");
         setEmail("");
         setPassword("");
     };
@@ -102,8 +131,8 @@ export const LoginForm = () => {
                         <TextField
                             label="Nome"
                             variant="filled"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                             required
                             fullWidth
                             sx={{
