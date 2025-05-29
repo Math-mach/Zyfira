@@ -10,7 +10,7 @@ export async function register(req: Request, res: Response) {
     let { username, email, password } = req.body;
 
     try {
-        if (!username && !email && !password) {
+        if (!username || !email || !password) {
             res.status(400).json({ error: "Dados faltando" });
             return;
         }
@@ -20,7 +20,7 @@ export async function register(req: Request, res: Response) {
         const valid = await db("users").where({ email }).first();
 
         if (valid) {
-            res.status(400).json({ error: "Usuario já cadastrado" });
+            res.status(400).json({ error: "Usuário já cadastrado" });
             return;
         }
 
@@ -63,7 +63,7 @@ export async function login(req: Request, res: Response) {
             return;
         }
 
-        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+        const token = jwt.sign({ id: user.ID, email: user.email }, JWT_SECRET, {
             expiresIn: "10h",
         });
 
@@ -82,4 +82,53 @@ export function logout(req: Request, res: Response) {
     res.clearCookie(COOKIE_NAME).json({
         message: "Logout realizado com sucesso",
     });
+}
+
+export async function getUserProfile(req: Request, res: Response) {
+    try {
+        const userId = (req as any).userId;
+
+        const user = await db("users")
+            .select("ID", "username", "email", "created_in", "updated_in")
+            .where("ID", userId)
+            .first();
+
+        if (!user) {
+            res.status(404).json({ error: "Usuário não encontrado" });
+            return;
+        }
+
+        res.json(user);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Erro interno do servidor" });
+    }
+}
+
+export async function updateUserProfile(req: Request, res: Response) {
+    try {
+        const userId = (req as any).userId;
+        const { username, email, password } = req.body;
+
+        const updateData: any = {};
+        if (username) updateData.username = username;
+        if (email) updateData.email = email;
+        if (password)
+            updateData.password = await bcrypt.hash(password, SALT_ROUNDS);
+        updateData.updated_in = new Date();
+
+        const updated = await db("users")
+            .where("ID", userId)
+            .update(updateData);
+
+        if (!updated) {
+            res.status(404).json({ error: "Usuário não encontrado" });
+            return;
+        }
+
+        res.json({ message: "Perfil atualizado com sucesso" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Erro interno do servidor" });
+    }
 }
