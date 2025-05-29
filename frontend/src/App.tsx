@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Pages
 
@@ -13,8 +13,6 @@ import { Sidebar } from "./components/Sidebar";
 
 const isAuthenticated = () => !!localStorage.getItem("token");
 
-console.log(isAuthenticated());
-
 const App = () => {
     return (
         <BrowserRouter>
@@ -28,16 +26,29 @@ const App = () => {
                                 <div style={{ flex: 1, padding: "20px" }}>
                                     <Routes>
                                         <Route
-                                            path="*"
+                                            path="/dashboard"
                                             element={<Dashboard />}
+                                        />
+                                        <Route
+                                            path="/meus-ativos"
+                                            element={<Profile />}
                                         />
                                         <Route
                                             path="/profile"
                                             element={<Profile />}
                                         />
                                         <Route
-                                            path="/settings"
+                                            path="/Historico"
                                             element={<Settings />}
+                                        />
+                                        <Route
+                                            path="*"
+                                            element={
+                                                <Navigate
+                                                    to="/dashboard"
+                                                    replace
+                                                />
+                                            }
                                         />
                                     </Routes>
                                 </div>
@@ -45,7 +56,13 @@ const App = () => {
                         }
                     />
                 ) : (
-                    <Route path="*" element={<LoginForm />} />
+                    <>
+                        <Route path="/login" element={<LoginForm />} />
+                        <Route
+                            path="*"
+                            element={<Navigate to="/login" replace />}
+                        />
+                    </>
                 )}
             </Routes>
         </BrowserRouter>

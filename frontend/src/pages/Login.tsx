@@ -46,8 +46,9 @@ export const LoginForm = () => {
             }
 
             const data = await response.json();
-            console.log(data);
+            console.log(data.message);
             localStorage.setItem("token", data.token);
+            window.location.reload();
         } catch (err) {
             console.error("Erro de rede:", err);
             alert("Erro de conexão com o servidor.");

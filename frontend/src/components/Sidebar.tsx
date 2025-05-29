@@ -7,12 +7,18 @@ import {
     ListItemButton,
     Typography,
 } from "@mui/material";
+
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import HistoryIcon from "@mui/icons-material/History";
-import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+
+import ProfileMenu from "./ProfileMenu";
+
+import { useNavigate } from "react-router-dom";
 
 export const Sidebar = () => {
+    const navigate = useNavigate();
+
     return (
         <Box
             sx={{
@@ -38,13 +44,21 @@ export const Sidebar = () => {
                         Zyfira
                     </Typography>
                 </ListItem>
-                <ListItemButton>
+                <ListItemButton
+                    onClick={() => {
+                        navigate("/");
+                    }}
+                >
                     <ListItemIcon>
                         <DashboardIcon sx={{ color: "#8a2be2" }} />
                     </ListItemIcon>
                     <ListItemText primary="Inicio" sx={{ color: "#black" }} />
                 </ListItemButton>
-                <ListItemButton>
+                <ListItemButton
+                    onClick={() => {
+                        navigate("/meus-ativos");
+                    }}
+                >
                     <ListItemIcon>
                         <AssignmentIcon sx={{ color: "#8a2be2" }} />
                     </ListItemIcon>
@@ -53,7 +67,11 @@ export const Sidebar = () => {
                         sx={{ color: "#black" }}
                     />
                 </ListItemButton>
-                <ListItemButton>
+                <ListItemButton
+                    onClick={() => {
+                        navigate("/Historico");
+                    }}
+                >
                     <ListItemIcon>
                         <HistoryIcon sx={{ color: "#8a2be2" }} />
                     </ListItemIcon>
@@ -65,12 +83,7 @@ export const Sidebar = () => {
             </List>
 
             <List sx={{ mt: "auto" }}>
-                <ListItemButton>
-                    <ListItemIcon>
-                        <ExitToAppIcon sx={{ color: "#8a2be2" }} />
-                    </ListItemIcon>
-                    <ListItemText primary="Logout" sx={{ color: "#black" }} />
-                </ListItemButton>
+                <ProfileMenu />
             </List>
         </Box>
     );
