@@ -7,7 +7,7 @@ const configKnex: Knex.Config = {
     client: "pg",
     connection: process.env.DATABASE_URL,
     migrations: {
-        directory: "./migrations",
+        directory: "./src/migrations",
     },
 };
 

@@ -1,6 +1,15 @@
 import { Knex } from "knex";
 
 export async function up(knex: Knex) {
+    await knex.schema.createTableIfNotExists("users", (table) => {
+        table.uuid("ID").primary().defaultTo(knex.raw("gen_random_uuid()"));
+        table.text("username").notNullable();
+        table.text("email").notNullable();
+        table.text("password").notNullable();
+        table.date("created_in").defaultTo(knex.raw("now()"));
+        table.date("updated_in").nullable();
+    });
+
     await knex.schema.createTableIfNotExists("assets", (table) => {
         table.uuid("id").primary().defaultTo(knex.raw("gen_random_uuid()"));
         table
@@ -15,7 +24,6 @@ export async function up(knex: Knex) {
         table.date("updated_at");
     });
 
-    // Tabela de manutenções realizadas
     await knex.schema.createTableIfNotExists("maintenances", (table) => {
         table.uuid("id").primary().defaultTo(knex.raw("gen_random_uuid()"));
         table
@@ -58,6 +66,7 @@ export async function up(knex: Knex) {
 }
 
 export async function down(knex: Knex) {
+    await knex.schema.dropTableIfExists("users");
     await knex.schema.dropTableIfExists("scheduled_maintenances");
     await knex.schema.dropTableIfExists("maintenances");
     await knex.schema.dropTableIfExists("assets");
