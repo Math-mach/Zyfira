@@ -86,6 +86,8 @@ export async function updateMaintenance(
     const { id } = req.params;
     const updates = req.body;
 
+    console.log(updates);
+
     try {
         const [maintenance] = await db("maintenances")
             .join("assets", "maintenances.asset_id", "assets.id")

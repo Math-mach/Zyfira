@@ -1,146 +1,189 @@
-import { useEffect, useState } from "react";
 import {
     Box,
-    Card,
-    CardContent,
-    CircularProgress,
     Typography,
+    Paper,
+    CircularProgress,
+    Alert,
+    Fab,
+    List,
+    ListItem,
+    ListItemText,
     Chip,
-    Stack,
+    IconButton,
 } from "@mui/material";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
 
-type ScheduledMaintenance = {
+import { useEffect, useState } from "react";
+import ModalAdicionarManutencaoAgendada from "../components/ModalAdicionarManutencaoAgendada";
+import EditAssetModal from "../components/EditMaintenancesModal";
+
+interface ScheduledMaintenance {
     id: string;
     title: string;
     due_date: string;
-    condition: string | null;
     resolved: boolean;
     asset_id: string;
-};
-
-function getStatus(dueDateStr: string): {
-    label: string;
-    color: "default" | "error" | "warning";
-} {
-    const today = new Date();
-    const dueDate = new Date(dueDateStr);
-
-    const diffTime = dueDate.getTime() - today.setHours(0, 0, 0, 0);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) return { label: "Atrasado", color: "error" };
-    if (diffDays === 0) return { label: "Vence hoje", color: "warning" };
-    if (diffDays === 1) return { label: "Vence amanhã", color: "warning" };
-    return {
-        label: `Vence em ${dueDate.toLocaleDateString("pt-BR")}`,
-        color: "default",
-    };
+    asset_name: string;
+    condition: string;
+    diasRestantes: number;
 }
 
 export default function Dashboard() {
+    const [idManu, setIdManu] = useState<string | null>(null);
+    const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
+    const [editOpen, setEditOpen] = useState(false);
+    const [manutencoes, setManutencoes] = useState<ScheduledMaintenance[]>([]);
     const [loading, setLoading] = useState(true);
-    const [items, setItems] = useState<ScheduledMaintenance[]>([]);
+    const [feedback, setFeedback] = useState<{
+        type: "error" | "success";
+        message: string;
+    } | null>(null);
+    const [openModal, setOpenModal] = useState(false);
+
+    const fetchManutencoes = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch("/api/scheduled", {
+                credentials: "include",
+            });
+
+            if (!res.ok) throw new Error("Erro ao buscar manutenções");
+
+            const data = await res.json();
+            const hoje = new Date();
+
+            const filtradas = data
+                .filter((m: ScheduledMaintenance) => !m.resolved)
+                .map((m: ScheduledMaintenance) => ({
+                    ...m,
+                    diasRestantes: Math.floor(
+                        (new Date(m.due_date).getTime() - hoje.getTime()) /
+                            (1000 * 60 * 60 * 24)
+                    ),
+                }))
+                .sort((a, b) => a.diasRestantes - b.diasRestantes);
+
+            setManutencoes(filtradas);
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setFeedback({ type: "error", message: err.message });
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const res = await fetch("/api/scheduled", {
-                    credentials: "include",
-                });
-
-                const data: ScheduledMaintenance[] = await res.json();
-
-                const filtered = data
-                    .filter((item) => !item.resolved && item.due_date)
-                    .sort((a, b) => {
-                        const d1 = new Date(a.due_date).getTime();
-                        const d2 = new Date(b.due_date).getTime();
-                        return d1 - d2;
-                    });
-
-                setItems(filtered);
-            } catch (err) {
-                console.error("Erro ao buscar dados:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
+        fetchManutencoes();
     }, []);
 
-    return (
-        <Box p={3}>
-            <Stack direction="row" alignItems="center" gap={1} mb={3}>
-                <CalendarMonthIcon color="primary" />
-                <Typography variant="h5" fontWeight={600}>
-                    Painel de Manutenções
-                </Typography>
-            </Stack>
+    const getStatus = (dias: number) => {
+        if (dias + 1 === 0) return { label: "HOJE", color: "warning" };
+        if (dias < 0) return { label: "ATRASADA", color: "error" };
+        if (dias <= 3)
+            return { label: `Faltam ${dias + 1} dias`, color: "info" };
+        return { label: `Em ${dias} dias`, color: "default" };
+    };
 
-            {loading ? (
-                <Box display="flex" justifyContent="center" mt={4}>
-                    <CircularProgress />
-                </Box>
-            ) : items.length === 0 ? (
-                <Typography color="green">
-                    🎉 Nenhuma manutenção pendente!
-                </Typography>
-            ) : (
-                <Stack spacing={2}>
-                    {items.map((item) => {
-                        const status = getStatus(item.due_date);
-                        return (
-                            <Card key={item.id} variant="outlined">
-                                <CardContent
-                                    sx={{
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-                                    }}
-                                >
-                                    <Box>
-                                        <Typography
-                                            variant="subtitle1"
-                                            fontWeight={600}
-                                        >
-                                            {item.title}
-                                        </Typography>
-                                        <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                        >
-                                            Condição:{" "}
-                                            {item.condition ||
-                                                "Não especificada"}
-                                        </Typography>
-                                    </Box>
-                                    <Chip
-                                        label={status.label}
-                                        color={status.color}
-                                        icon={
-                                            status.color !== "default" ? (
-                                                <WarningAmberIcon />
-                                            ) : undefined
-                                        }
-                                    />
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
-                </Stack>
+    return (
+        <Box p={4}>
+            <Typography variant="h4" gutterBottom>
+                Painel de Manutenções Agendadas
+            </Typography>
+
+            {feedback && (
+                <Alert
+                    severity={feedback.type}
+                    onClose={() => setFeedback(null)}
+                    variant="filled"
+                >
+                    {feedback.message}
+                </Alert>
             )}
 
-            <Typography
-                variant="caption"
-                display="block"
-                mt={3}
-                color="text.secondary"
+            {loading ? (
+                <CircularProgress />
+            ) : manutencoes.length === 0 ? (
+                <Typography>Nenhuma manutenção agendada urgente.</Typography>
+            ) : (
+                <Paper elevation={3} sx={{ mt: 2 }}>
+                    <List>
+                        {manutencoes.map((manutencao) => {
+                            const status = getStatus(manutencao.diasRestantes);
+                            return (
+                                <ListItem key={manutencao.id} divider>
+                                    <ListItemText
+                                        primary={manutencao.title}
+                                        secondary={`Ativo: ${
+                                            manutencao.asset_name
+                                        } — Prevista para: ${new Date(
+                                            manutencao.due_date
+                                        ).toLocaleDateString("pt-BR")}`}
+                                    />
+                                    {manutencao.condition && (
+                                        <Chip
+                                            label={`${manutencao.condition}KM`}
+                                        />
+                                    )}
+                                    <Chip
+                                        label={status.label}
+                                        color={
+                                            status.color as
+                                                | "error"
+                                                | "warning"
+                                                | "info"
+                                                | "default"
+                                        }
+                                    />
+                                    <IconButton
+                                        onClick={() => {
+                                            setSelectedAssetId(
+                                                manutencao.asset_id
+                                            );
+
+                                            setIdManu(manutencao.id);
+                                            setEditOpen(true);
+                                        }}
+                                    >
+                                        <EditIcon />
+                                    </IconButton>
+                                </ListItem>
+                            );
+                        })}
+                    </List>
+                </Paper>
+            )}
+
+            <Fab
+                color="primary"
+                onClick={() => setOpenModal(true)}
+                sx={{ position: "fixed", bottom: 24, right: 24 }}
             >
-                Apenas manutenções não resolvidas são exibidas.
-            </Typography>
+                <AddIcon />
+            </Fab>
+
+            <ModalAdicionarManutencaoAgendada
+                open={openModal}
+                onClose={() => setOpenModal(false)}
+                onSuccess={() => {
+                    setOpenModal(false);
+                    fetchManutencoes();
+                }}
+            />
+
+            {selectedAssetId && (
+                <EditAssetModal
+                    id={idManu}
+                    assetId={selectedAssetId}
+                    open={editOpen}
+                    onClose={() => setEditOpen(false)}
+                    onUpdated={() => {
+                        setEditOpen(false);
+                        fetchManutencoes();
+                    }}
+                />
+            )}
         </Box>
     );
 }

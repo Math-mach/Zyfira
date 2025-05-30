@@ -85,7 +85,7 @@ export default function AssetsPage() {
     }, []);
 
     return (
-        <Container sx={{ mt: 4 }}>
+        <Container>
             <Typography variant="h5" gutterBottom>
                 Todos os Ativos
             </Typography>

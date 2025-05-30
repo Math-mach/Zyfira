@@ -67,7 +67,11 @@ export default function AddAssetModal() {
             setOpen(false);
             setFormData({ name: "", description: "" });
         } catch (err) {
-            setFeedback({ type: "error", message: err.message });
+            const message =
+                err instanceof Error
+                    ? err.message
+                    : "Erro desconhecido ao adicionar o ativo";
+            setFeedback({ type: "error", message });
         } finally {
             setLoading(false);
         }
