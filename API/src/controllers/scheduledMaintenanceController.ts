@@ -13,6 +13,7 @@ export async function getAllScheduled(
 
         res.json(scheduled);
     } catch (err) {
+        console.error("Erro em getAllScheduled:", err);
         res.status(500).json({ error: "Erro ao buscar manutenções agendadas" });
     }
 }
@@ -26,17 +27,21 @@ export async function getScheduleds(
     try {
         const scheduled = await db("scheduled_maintenances")
             .join("assets", "scheduled_maintenances.asset_id", "assets.id")
-            .where("scheduled_maintenances.asset_id", assetId)
-            .andWhere("assets.user_id", req.userId)
+            .where({
+                "scheduled_maintenances.asset_id": assetId,
+                "assets.user_id": req.userId,
+            })
             .select("scheduled_maintenances.*");
 
-        if (!scheduled)
+        if (scheduled.length === 0) {
             return res
                 .status(404)
                 .json({ error: "Manutenção agendada não encontrada" });
+        }
 
         res.json(scheduled);
     } catch (err) {
+        console.error("Erro em getScheduleds:", err);
         res.status(500).json({ error: "Erro ao buscar manutenção agendada" });
     }
 }
@@ -50,19 +55,23 @@ export async function getScheduledById(
     try {
         const scheduled = await db("scheduled_maintenances")
             .join("assets", "scheduled_maintenances.asset_id", "assets.id")
-            .where("scheduled_maintenances.asset_id", assetId)
-            .andWhere("scheduled_maintenances.id", maintenanceId)
-            .andWhere("assets.user_id", req.userId)
+            .where({
+                "scheduled_maintenances.asset_id": assetId,
+                "scheduled_maintenances.id": maintenanceId,
+                "assets.user_id": req.userId,
+            })
             .select("scheduled_maintenances.*")
             .first();
 
-        if (!scheduled)
+        if (!scheduled) {
             return res
                 .status(404)
                 .json({ error: "Manutenção agendada não encontrada" });
+        }
 
         res.json(scheduled);
     } catch (err) {
+        console.error("Erro em getScheduledById:", err);
         res.status(500).json({ error: "Erro ao buscar manutenção agendada" });
     }
 }
@@ -77,10 +86,12 @@ export async function createScheduled(
         const asset = await db("assets")
             .where({ id: asset_id, user_id: req.userId })
             .first();
-        if (!asset)
+
+        if (!asset) {
             return res
                 .status(403)
                 .json({ error: "Acesso não autorizado ao ativo" });
+        }
 
         const [scheduled] = await db("scheduled_maintenances")
             .insert({
@@ -88,12 +99,13 @@ export async function createScheduled(
                 title,
                 due_date,
                 condition,
+                maintenance_id,
             })
             .returning("*");
 
         res.status(201).json(scheduled);
     } catch (err) {
-        console.log(err);
+        console.error("Erro em createScheduled:", err);
         res.status(500).json({ error: "Erro ao criar manutenção agendada" });
     }
 }
@@ -117,7 +129,7 @@ export async function updateScheduled(
         }
 
         const [updated] = await db("scheduled_maintenances")
-            .where("id", id)
+            .where({ id })
             .update({ ...updates, updated_at: new Date() })
             .returning("*");
 
@@ -127,7 +139,7 @@ export async function updateScheduled(
 
         res.json(updated);
     } catch (err) {
-        console.error(err);
+        console.error("Erro em updateScheduled:", err);
         res.status(500).json({
             error: "Erro ao atualizar manutenção agendada",
         });
@@ -147,13 +159,15 @@ export async function deleteScheduled(
             .andWhere("assets.user_id", req.userId)
             .del();
 
-        if (!deleted)
+        if (!deleted) {
             return res
                 .status(404)
                 .json({ error: "Manutenção agendada não encontrada" });
+        }
 
         res.status(204).send();
     } catch (err) {
+        console.error("Erro em deleteScheduled:", err);
         res.status(500).json({ error: "Erro ao deletar manutenção agendada" });
     }
 }
