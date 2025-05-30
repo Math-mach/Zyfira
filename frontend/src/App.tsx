@@ -1,12 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Pages
-
 import { LoginForm } from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 
 // Components
-
 import { Sidebar } from "./components/Sidebar";
 import AssetsPage from "./pages/Assets";
 
@@ -29,7 +27,7 @@ const App = () => {
                                             element={<Dashboard />}
                                         />
                                         <Route
-                                            path="/meus-ativos"
+                                            path="/my-assets"
                                             element={<AssetsPage />}
                                         />
                                         <Route

@@ -21,7 +21,7 @@ const navItems = [
     {
         label: "Meus Ativos",
         icon: <AssignmentIcon sx={{ color: "#8a2be2" }} />,
-        path: "/meus-ativos",
+        path: "/my-assets",
     },
 ];
 
