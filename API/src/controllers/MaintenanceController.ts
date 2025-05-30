@@ -80,7 +80,7 @@ export async function createScheduled(
     req: Request & { userId?: string },
     res: Response
 ) {
-    const { asset_id, title, due_date, condition, maintenance_id } = req.body;
+    const { asset_id, title, due_date, condition } = req.body;
 
     try {
         const asset = await db("assets")
@@ -99,7 +99,6 @@ export async function createScheduled(
                 title,
                 due_date,
                 condition,
-                maintenance_id,
             })
             .returning("*");
 
