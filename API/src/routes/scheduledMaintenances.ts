@@ -6,7 +6,7 @@ import {
     updateScheduled,
     deleteScheduled,
     getScheduleds,
-} from "../controllers/scheduledMaintenanceController";
+} from "../controllers/MaintenanceController";
 import { authMiddleware } from "../middlewares/authMiddleware";
 
 const router = Router();
