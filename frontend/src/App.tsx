@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 // Pages
 
 import { LoginForm } from "./pages/Login";
-import { Dashboard } from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard";
 import { Profile } from "./pages/Profile";
 import { Settings } from "./pages/Settings";
 
