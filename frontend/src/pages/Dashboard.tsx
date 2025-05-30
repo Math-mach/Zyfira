@@ -29,6 +29,10 @@ interface ScheduledMaintenance {
     diasRestantes: number;
 }
 
+type Manutencao = {
+    diasRestantes: number;
+};
+
 export default function Dashboard() {
     const [idManu, setIdManu] = useState<string | null>(null);
     const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
@@ -62,7 +66,10 @@ export default function Dashboard() {
                             (1000 * 60 * 60 * 24)
                     ),
                 }))
-                .sort((a, b) => a.diasRestantes - b.diasRestantes);
+                .sort(
+                    (a: Manutencao, b: Manutencao) =>
+                        a.diasRestantes - b.diasRestantes
+                );
 
             setManutencoes(filtradas);
         } catch (err: unknown) {
@@ -174,7 +181,7 @@ export default function Dashboard() {
 
             {selectedAssetId && (
                 <EditAssetModal
-                    id={idManu}
+                    id={idManu ?? ""}
                     assetId={selectedAssetId}
                     open={editOpen}
                     onClose={() => setEditOpen(false)}
