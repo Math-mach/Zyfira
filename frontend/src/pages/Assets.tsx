@@ -25,6 +25,8 @@ type Asset = {
     created_at: string;
 };
 
+import AddAssetModal from "../components/AddAssets";
+
 export default function AssetsPage() {
     const [assets, setAssets] = useState<Asset[]>([]);
     const [loading, setLoading] = useState(true);
@@ -161,6 +163,7 @@ export default function AssetsPage() {
                     </Alert>
                 ) : undefined}
             </Snackbar>
+            <AddAssetModal />
         </Container>
     );
 }

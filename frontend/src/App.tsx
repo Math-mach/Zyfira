@@ -11,7 +11,6 @@ import { Settings } from "./pages/Settings";
 
 import { Sidebar } from "./components/Sidebar";
 import AssetsPage from "./pages/Assets";
-import AddAssetModal from "./components/AddAssets";
 
 const isAuthenticated = () => !!localStorage.getItem("token");
 
@@ -53,7 +52,6 @@ const App = () => {
                                             }
                                         />
                                     </Routes>
-                                    <AddAssetModal />
                                 </div>
                             </div>
                         }
