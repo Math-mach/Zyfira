@@ -1,11 +1,20 @@
 import React, { useState } from "react";
-import { Box, Button, Container, TextField, Typography } from "@mui/material";
+import {
+    Box,
+    Button,
+    Container,
+    TextField,
+    Typography,
+    Snackbar,
+    Alert,
+} from "@mui/material";
 
 export const LoginForm = () => {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isLogin, setIsLogin] = useState(true);
+    const [feedback, setFeedback] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -15,7 +24,7 @@ export const LoginForm = () => {
             (!isLogin &&
                 (!username.trim() || !email.trim() || !password.trim()))
         ) {
-            alert("Por favor, preencha todos os campos.");
+            setFeedback("Por favor, preencha todos os campos.");
             return;
         }
 
@@ -34,24 +43,20 @@ export const LoginForm = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error(
-                    `Erro de ${isLogin ? "login" : "registro"}:`,
-                    errorData.error
-                );
-                alert(
-                    `${isLogin ? "Login" : "Registro"} falhou: ` +
+                setFeedback(
+                    `${isLogin ? "Login" : "Registro"} falhou: ${
                         errorData.error
+                    }`
                 );
                 return;
             }
 
             const data = await response.json();
-            console.log(data.message);
             localStorage.setItem("token", data.token);
             window.location.reload();
         } catch (err) {
             console.error("Erro de rede:", err);
-            alert("Erro de conexão com o servidor.");
+            setFeedback("Erro de conexão com o servidor.");
         }
 
         setUsername("");
@@ -134,46 +139,20 @@ export const LoginForm = () => {
                             variant="filled"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            required
                             fullWidth
-                            sx={{
-                                bgcolor: "rgba(255, 255, 255, 0.15)",
-                                "& .MuiInputBase-input": {
-                                    color: "#fff",
-                                },
-                                "& .MuiInputLabel-root": {
-                                    color: "rgba(255,255,255,0.5)",
-                                },
-                                "& .Mui-focused .MuiInputLabel-root": {
-                                    color: "#8a2be2",
-                                },
-                                borderRadius: 1.25,
-                            }}
                             margin="normal"
+                            sx={textFieldStyles}
                         />
                     )}
 
                     <TextField
-                        label=" Email"
+                        label="Email"
                         variant="filled"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        required
                         fullWidth
-                        sx={{
-                            bgcolor: "rgba(255, 255, 255, 0.15)",
-                            "& .MuiInputBase-input": {
-                                color: "#fff",
-                            },
-                            "& .MuiInputLabel-root": {
-                                color: "rgba(255,255,255,0.5)",
-                            },
-                            "& .Mui-focused .MuiInputLabel-root": {
-                                color: "#8a2be2",
-                            },
-                            borderRadius: 1.25,
-                        }}
                         margin="normal"
+                        sx={textFieldStyles}
                     />
 
                     <TextField
@@ -182,21 +161,9 @@ export const LoginForm = () => {
                         variant="filled"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        required
+                        fullWidth
                         margin="normal"
-                        sx={{
-                            bgcolor: "rgba(255, 255, 255, 0.15)",
-                            "& .MuiInputBase-input": {
-                                color: "#fff",
-                            },
-                            "& .MuiInputLabel-root": {
-                                color: "rgba(255,255,255,0.5)",
-                            },
-                            "& .Mui-focused .MuiInputLabel-root": {
-                                color: "#8a2be2",
-                            },
-                            borderRadius: 1.25,
-                        }}
+                        sx={textFieldStyles}
                     />
 
                     <Button
@@ -213,6 +180,7 @@ export const LoginForm = () => {
                             },
                             py: 2,
                             borderRadius: 2,
+                            mt: 2,
                         }}
                     >
                         {isLogin ? "Entrar" : "Registrar"}
@@ -246,6 +214,36 @@ export const LoginForm = () => {
                     </Typography>
                 </Box>
             </Box>
+
+            <Snackbar
+                open={!!feedback}
+                autoHideDuration={4000}
+                onClose={() => setFeedback(null)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
+                <Alert
+                    onClose={() => setFeedback(null)}
+                    severity="error"
+                    sx={{ width: "100%" }}
+                    variant="filled"
+                >
+                    {feedback}
+                </Alert>
+            </Snackbar>
         </Container>
     );
+};
+
+const textFieldStyles = {
+    bgcolor: "rgba(255, 255, 255, 0.15)",
+    "& .MuiInputBase-input": {
+        color: "#fff",
+    },
+    "& .MuiInputLabel-root": {
+        color: "rgba(255,255,255,0.5)",
+    },
+    "& .Mui-focused .MuiInputLabel-root": {
+        color: "#8a2be2",
+    },
+    borderRadius: 1.25,
 };
