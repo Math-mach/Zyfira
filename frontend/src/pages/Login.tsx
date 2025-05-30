@@ -20,7 +20,7 @@ export const LoginForm = () => {
         }
 
         try {
-            const url = isLogin ? "/api/login" : "/api/register";
+            const url = isLogin ? "/api/users/login" : "/api/users/register";
             const payload = isLogin
                 ? { email, password }
                 : { username, email, password };
