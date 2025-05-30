@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
     Avatar,
     Menu,
@@ -10,9 +10,43 @@ import {
 } from "@mui/material";
 import Logout from "@mui/icons-material/Logout";
 
+type User = {
+    username: string;
+    email: string;
+};
+
 export default function ProfileMenu() {
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [user, setUser] = useState<User | null>(null);
     const open = Boolean(anchorEl);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const res = await fetch("/api/users/me", {
+                    credentials: "include",
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setUser(data);
+                } else {
+                    console.error("Erro ao buscar usuário");
+                }
+            } catch (err) {
+                console.error("Erro de rede ao buscar usuário", err);
+            }
+        };
+
+        fetchUser();
+    }, []);
+
+    const getInitials = (name: string) => {
+        return name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase();
+    };
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -20,6 +54,19 @@ export default function ProfileMenu() {
 
     const handleClose = () => {
         setAnchorEl(null);
+    };
+
+    const handleLogout = async () => {
+        try {
+            await fetch("/api/users/logout", {
+                method: "POST",
+                credentials: "include",
+            });
+            localStorage.removeItem("token");
+            window.location.reload();
+        } catch (err) {
+            console.error("Erro ao sair", err);
+        }
     };
 
     return (
@@ -33,7 +80,7 @@ export default function ProfileMenu() {
             <ListItemButton onClick={handleClick}>
                 <ListItemIcon>
                     <Avatar sx={{ bgcolor: "purple" }} alt="Usuário">
-                        MM
+                        {user ? getInitials(user.username) : "?"}
                     </Avatar>
                 </ListItemIcon>
                 <ListItemText primary="Meu Perfil" />
@@ -47,7 +94,7 @@ export default function ProfileMenu() {
                 transformOrigin={{ horizontal: "left", vertical: "top" }}
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
-                <MenuItem onClick={() => console.log("logout")}>
+                <MenuItem onClick={handleLogout}>
                     <ListItemIcon>
                         <Logout fontSize="small" />
                     </ListItemIcon>

@@ -93,7 +93,7 @@ export default function EditAssetModal({
 
                 setAsset(assetData);
                 setMaintenance(maintData);
-            } catch (err) {
+            } catch {
                 setFeedback({
                     type: "error",
                     message: "Erro ao carregar informações.",
