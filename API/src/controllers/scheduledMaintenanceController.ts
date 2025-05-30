@@ -88,12 +88,12 @@ export async function createScheduled(
                 title,
                 due_date,
                 condition,
-                maintenance_id,
             })
             .returning("*");
 
         res.status(201).json(scheduled);
     } catch (err) {
+        console.log(err);
         res.status(500).json({ error: "Erro ao criar manutenção agendada" });
     }
 }

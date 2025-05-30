@@ -10,7 +10,6 @@ import {
 
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import AssignmentIcon from "@mui/icons-material/Assignment";
-import HistoryIcon from "@mui/icons-material/History";
 
 import ProfileMenu from "./ProfileMenu";
 
@@ -64,19 +63,6 @@ export const Sidebar = () => {
                     </ListItemIcon>
                     <ListItemText
                         primary="Meus Ativos"
-                        sx={{ color: "#black" }}
-                    />
-                </ListItemButton>
-                <ListItemButton
-                    onClick={() => {
-                        navigate("/Historico");
-                    }}
-                >
-                    <ListItemIcon>
-                        <HistoryIcon sx={{ color: "#8a2be2" }} />
-                    </ListItemIcon>
-                    <ListItemText
-                        primary="Histórico"
                         sx={{ color: "#black" }}
                     />
                 </ListItemButton>

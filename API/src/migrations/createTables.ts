@@ -24,23 +24,6 @@ export async function up(knex: Knex) {
         table.date("updated_at");
     });
 
-    await knex.schema.createTableIfNotExists("maintenances", (table) => {
-        table.uuid("id").primary().defaultTo(knex.raw("gen_random_uuid()"));
-        table
-            .uuid("asset_id")
-            .notNullable()
-            .references("id")
-            .inTable("assets")
-            .onDelete("CASCADE");
-        table.string("title").notNullable(); // Ex: "Troca de óleo"
-        table.date("performed_at").notNullable(); // Data da manutenção
-        table.text("description"); // Descrição
-        table.date("next_due_date"); // Previsão para próxima manutenção
-        table.string("next_due_condition"); // Ex: "10000 km"
-        table.date("created_at").defaultTo(knex.fn.now());
-        table.date("updated_at");
-    });
-
     await knex.schema.createTableIfNotExists(
         "scheduled_maintenances",
         (table) => {
@@ -55,14 +38,35 @@ export async function up(knex: Knex) {
             table.date("due_date").notNullable(); // Data prevista
             table.string("condition"); // Ex: "5000 km"
             table.boolean("resolved").defaultTo(false);
-            table
-                .uuid("maintenance_id")
-                .references("id")
-                .inTable("maintenances");
             table.date("created_at").defaultTo(knex.fn.now());
             table.date("updated_at");
         }
     );
+
+    await knex.schema.createTableIfNotExists("maintenance_history", (table) => {
+        table.uuid("id").primary().defaultTo(knex.raw("gen_random_uuid()"));
+        table
+            .uuid("asset_id")
+            .notNullable()
+            .references("id")
+            .inTable("assets")
+            .onDelete("CASCADE");
+        table
+            .uuid("scheduled_id")
+            .references("id")
+            .inTable("scheduled_maintenances")
+            .onDelete("CASCADE");
+        table.text("title");
+        table.text("condition");
+        table.timestamp("due_date");
+        table.timestamp("completed_at").notNullable().defaultTo(knex.fn.now());
+        table
+            .uuid("user_id")
+            .notNullable()
+            .references("ID")
+            .inTable("users")
+            .onDelete("CASCADE");
+    });
 }
 
 export async function down(knex: Knex) {

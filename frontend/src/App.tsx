@@ -4,8 +4,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { LoginForm } from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import { Profile } from "./pages/Profile";
-import { Settings } from "./pages/Settings";
 
 // Components
 
@@ -33,14 +31,6 @@ const App = () => {
                                         <Route
                                             path="/meus-ativos"
                                             element={<AssetsPage />}
-                                        />
-                                        <Route
-                                            path="/profile"
-                                            element={<Profile />}
-                                        />
-                                        <Route
-                                            path="/Historico"
-                                            element={<Settings />}
                                         />
                                         <Route
                                             path="*"

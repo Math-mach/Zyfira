@@ -18,6 +18,10 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { useEffect, useState } from "react";
 import EditAssetModal from "../components/EditAssetModal";
 
+import HistoryIcon from "@mui/icons-material/History";
+import MaintenanceHistoryModal from "../components/MaintenanceHistoryModal";
+import AddAssetModal from "../components/AddAssets";
+
 type Asset = {
     id: string;
     name: string;
@@ -25,9 +29,8 @@ type Asset = {
     created_at: string;
 };
 
-import AddAssetModal from "../components/AddAssets";
-
 export default function AssetsPage() {
+    const [historyAssetId, setHistoryAssetId] = useState<string | null>(null);
     const [assets, setAssets] = useState<Asset[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
@@ -118,6 +121,13 @@ export default function AssetsPage() {
                                     <TableCell align="right">
                                         <IconButton
                                             onClick={() =>
+                                                setHistoryAssetId(asset.id)
+                                            }
+                                        >
+                                            <HistoryIcon />
+                                        </IconButton>
+                                        <IconButton
+                                            onClick={() =>
                                                 setSelectedAsset(asset)
                                             }
                                         >
@@ -146,6 +156,12 @@ export default function AssetsPage() {
                     fetchAssets();
                     setSelectedAsset(null);
                 }}
+            />
+
+            <MaintenanceHistoryModal
+                open={!!historyAssetId}
+                assetId={historyAssetId ?? ""}
+                onClose={() => setHistoryAssetId(null)}
             />
 
             <Snackbar

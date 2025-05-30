@@ -54,6 +54,7 @@ export default function EditAssetModal({
     onUpdated,
 }: Props) {
     const [nextDate, setNextDate] = useState("");
+    const [nextCondition, setNextCondition] = useState("");
     const [tab, setTab] = useState(1);
     const [asset, setAsset] = useState<AssetData | null>(null);
     const [maintenance, setMaintenance] = useState<ScheduledMaintenance | null>(
@@ -131,6 +132,18 @@ export default function EditAssetModal({
                 });
 
                 if (completed && scheduleNew) {
+                    await fetch("/api/history", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({
+                            asset_id: asset.id,
+                            title: maintenance.title,
+                            due_date: maintenance.due_date,
+                            condition: maintenance.condition,
+                        }),
+                    });
+
                     await fetch(`/api/scheduled`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -139,7 +152,7 @@ export default function EditAssetModal({
                             asset_id: asset.id,
                             title: maintenance.title,
                             due_date: nextDate,
-                            condition: maintenance.condition,
+                            condition: nextCondition,
                             resolved: false,
                         }),
                     });
@@ -289,25 +302,37 @@ export default function EditAssetModal({
                                             />
 
                                             {scheduleNew && (
-                                                <TextField
-                                                    type="date"
-                                                    label="Data da próxima manutenção"
-                                                    value={nextDate}
-                                                    onChange={(e) =>
-                                                        setNextDate(
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    InputLabelProps={{
-                                                        shrink: true,
-                                                    }}
-                                                    inputProps={{
-                                                        min: new Date()
-                                                            .toISOString()
-                                                            .split("T")[0],
-                                                    }}
-                                                    fullWidth
-                                                />
+                                                <>
+                                                    <TextField
+                                                        type="date"
+                                                        label="Data da próxima manutenção"
+                                                        value={nextDate}
+                                                        onChange={(e) =>
+                                                            setNextDate(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        InputLabelProps={{
+                                                            shrink: true,
+                                                        }}
+                                                        inputProps={{
+                                                            min: new Date()
+                                                                .toISOString()
+                                                                .split("T")[0],
+                                                        }}
+                                                        fullWidth
+                                                    />
+                                                    <TextField
+                                                        label="Proxima Condição (ex: 10.000 km)"
+                                                        value={nextCondition}
+                                                        onChange={(e) =>
+                                                            setNextCondition(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        fullWidth
+                                                    />
+                                                </>
                                             )}
                                         </>
                                     )}
