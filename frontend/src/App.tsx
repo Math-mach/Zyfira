@@ -10,6 +10,7 @@ import { Settings } from "./pages/Settings";
 // Components
 
 import { Sidebar } from "./components/Sidebar";
+import AssetsPage from "./pages/Assets";
 import AddAssetModal from "./components/AddAssets";
 
 const isAuthenticated = () => !!localStorage.getItem("token");
@@ -32,7 +33,7 @@ const App = () => {
                                         />
                                         <Route
                                             path="/meus-ativos"
-                                            element={<Profile />}
+                                            element={<AssetsPage />}
                                         />
                                         <Route
                                             path="/profile"
