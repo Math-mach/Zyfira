@@ -144,7 +144,7 @@ export default function AddAssetModal() {
                 autoHideDuration={4000}
                 onClose={() => setFeedback(null)}
             >
-                {feedback && (
+                {feedback ? (
                     <Alert
                         severity={feedback.type}
                         onClose={() => setFeedback(null)}
@@ -152,7 +152,7 @@ export default function AddAssetModal() {
                     >
                         {feedback.message}
                     </Alert>
-                )}
+                ) : undefined}
             </Snackbar>
         </>
     );
