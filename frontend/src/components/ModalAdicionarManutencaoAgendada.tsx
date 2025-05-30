@@ -16,11 +16,30 @@ interface Asset {
     name: string;
 }
 
+interface FormData {
+    asset_id: string;
+    title: string;
+    due_date: string;
+    condition: string;
+}
+
+interface Feedback {
+    type: "success" | "error";
+    message: string;
+}
+
 interface Props {
     open: boolean;
     onClose: () => void;
     onSuccess?: () => void;
 }
+
+const initialForm: FormData = {
+    asset_id: "",
+    title: "",
+    due_date: "",
+    condition: "",
+};
 
 export default function ModalAdicionarManutencaoAgendada({
     open,
@@ -28,60 +47,58 @@ export default function ModalAdicionarManutencaoAgendada({
     onSuccess,
 }: Props) {
     const [assets, setAssets] = useState<Asset[]>([]);
-    const [form, setForm] = useState({
-        asset_id: "",
-        title: "",
-        due_date: "",
-        condition: "",
-    });
-    const [feedback, setFeedback] = useState<{
-        type: "success" | "error";
-        message: string;
-    } | null>(null);
+    const [form, setForm] = useState<FormData>(initialForm);
+    const [feedback, setFeedback] = useState<Feedback | null>(null);
     const [loading, setLoading] = useState(false);
 
+    const resetForm = () => setForm(initialForm);
+
     useEffect(() => {
-        if (open) {
-            fetch("/api/assets", { credentials: "include" })
-                .then((res) => res.json())
-                .then((data) => setAssets(data))
-                .catch(() =>
-                    setFeedback({
-                        type: "error",
-                        message: "Erro ao carregar ativos.",
-                    })
-                );
-        }
+        if (!open) return;
+        fetch("/api/assets", { credentials: "include" })
+            .then((res) => res.json())
+            .then(setAssets)
+            .catch(() =>
+                setFeedback({
+                    type: "error",
+                    message: "Erro ao carregar ativos.",
+                })
+            );
     }, [open]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+        const { name, value } = e.target;
+        setForm((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async () => {
         setLoading(true);
         setFeedback(null);
+
         try {
-            const res = await fetch("/api/scheduled", {
+            const response = await fetch("/api/scheduled", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
                 body: JSON.stringify(form),
             });
 
-            if (!res.ok) throw new Error("Erro ao adicionar manutenção");
+            if (!response.ok) throw new Error("Erro ao adicionar manutenção");
 
             setFeedback({
                 type: "success",
-                message: "Manutenção agendada com sucesso",
+                message: "Manutenção agendada com sucesso.",
             });
-            setForm({ asset_id: "", title: "", due_date: "", condition: "" });
+
+            resetForm();
             onSuccess?.();
             onClose();
-        } catch (err) {
+        } catch (error) {
             const message =
-                err instanceof Error
-                    ? err.message
+                error instanceof Error
+                    ? error.message
                     : "Erro ao adicionar manutenção";
             setFeedback({ type: "error", message });
         } finally {
@@ -108,6 +125,7 @@ export default function ModalAdicionarManutencaoAgendada({
                             </MenuItem>
                         ))}
                     </TextField>
+
                     <TextField
                         label="Título"
                         name="title"
@@ -115,6 +133,7 @@ export default function ModalAdicionarManutencaoAgendada({
                         onChange={handleChange}
                         required
                     />
+
                     <TextField
                         label="Data prevista"
                         name="due_date"
@@ -124,12 +143,14 @@ export default function ModalAdicionarManutencaoAgendada({
                         onChange={handleChange}
                         required
                     />
+
                     <TextField
                         label="Condição (ex: 5000 km)"
                         name="condition"
                         value={form.condition}
                         onChange={handleChange}
                     />
+
                     {feedback && (
                         <Alert
                             severity={feedback.type}
@@ -140,6 +161,7 @@ export default function ModalAdicionarManutencaoAgendada({
                     )}
                 </Box>
             </DialogContent>
+
             <DialogActions>
                 <Button onClick={onClose} disabled={loading}>
                     Cancelar
