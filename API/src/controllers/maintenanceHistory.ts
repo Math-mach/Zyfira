@@ -7,6 +7,7 @@ interface HistoryInput {
     title: string;
     condition?: string;
     completed_at?: string;
+    due_date?: string;
 }
 
 export async function getMaintenanceHistoryByAsset(
@@ -18,8 +19,10 @@ export async function getMaintenanceHistoryByAsset(
     try {
         const history = await db("maintenance_history")
             .join("assets", "maintenance_history.asset_id", "assets.id")
-            .where("maintenance_history.asset_id", assetId)
-            .andWhere("assets.user_id", req.userId)
+            .where({
+                "maintenance_history.asset_id": assetId,
+                "assets.user_id": req.userId,
+            })
             .select(
                 "maintenance_history.id",
                 "maintenance_history.title",
@@ -29,14 +32,15 @@ export async function getMaintenanceHistoryByAsset(
             )
             .orderBy("maintenance_history.completed_at", "desc");
 
-        if (!history.length)
+        if (history.length === 0) {
             return res
                 .status(404)
                 .json({ error: "Nenhum histórico encontrado." });
+        }
 
         res.json(history);
     } catch (err) {
-        console.error(err);
+        console.error("Erro ao buscar histórico:", err);
         res.status(500).json({ error: "Erro ao buscar histórico." });
     }
 }
@@ -55,11 +59,11 @@ export async function addToMaintenanceHistory(
     }
 
     try {
-        const assetExists = await db("assets")
+        const asset = await db("assets")
             .where({ id: asset_id, user_id: req.userId })
             .first();
 
-        if (!assetExists) {
+        if (!asset) {
             return res
                 .status(404)
                 .json({ error: "Ativo não encontrado ou sem permissão." });
@@ -68,9 +72,9 @@ export async function addToMaintenanceHistory(
         const [newHistory] = await db("maintenance_history")
             .insert({
                 asset_id,
-                due_date: due_date || null,
                 title,
-                condition: condition || null,
+                due_date: due_date ?? null,
+                condition: condition ?? null,
                 completed_at: completed_at
                     ? new Date(completed_at)
                     : new Date(),
@@ -80,7 +84,7 @@ export async function addToMaintenanceHistory(
 
         res.status(201).json(newHistory);
     } catch (err) {
-        console.error(err);
+        console.error("Erro ao adicionar ao histórico:", err);
         res.status(500).json({ error: "Erro ao adicionar ao histórico." });
     }
 }
