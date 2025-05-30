@@ -7,13 +7,23 @@ import {
     ListItemButton,
     Typography,
 } from "@mui/material";
-
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import AssignmentIcon from "@mui/icons-material/Assignment";
-
 import ProfileMenu from "./ProfileMenu";
-
 import { useNavigate } from "react-router-dom";
+
+const navItems = [
+    {
+        label: "Início",
+        icon: <DashboardIcon sx={{ color: "#8a2be2" }} />,
+        path: "/",
+    },
+    {
+        label: "Meus Ativos",
+        icon: <AssignmentIcon sx={{ color: "#8a2be2" }} />,
+        path: "/meus-ativos",
+    },
+];
 
 export const Sidebar = () => {
     const navigate = useNavigate();
@@ -27,10 +37,10 @@ export const Sidebar = () => {
                 borderRight: "1px solid rgba(0, 0, 0, 0.8)",
                 display: "flex",
                 flexDirection: "column",
-                gap: "2rem",
+                gap: 2,
                 backdropFilter: "blur(10px)",
                 color: "black",
-                padding: 2,
+                p: 2,
             }}
         >
             <List>
@@ -43,29 +53,13 @@ export const Sidebar = () => {
                         Zyfira
                     </Typography>
                 </ListItem>
-                <ListItemButton
-                    onClick={() => {
-                        navigate("/");
-                    }}
-                >
-                    <ListItemIcon>
-                        <DashboardIcon sx={{ color: "#8a2be2" }} />
-                    </ListItemIcon>
-                    <ListItemText primary="Inicio" sx={{ color: "#black" }} />
-                </ListItemButton>
-                <ListItemButton
-                    onClick={() => {
-                        navigate("/meus-ativos");
-                    }}
-                >
-                    <ListItemIcon>
-                        <AssignmentIcon sx={{ color: "#8a2be2" }} />
-                    </ListItemIcon>
-                    <ListItemText
-                        primary="Meus Ativos"
-                        sx={{ color: "#black" }}
-                    />
-                </ListItemButton>
+
+                {navItems.map(({ label, icon, path }) => (
+                    <ListItemButton key={label} onClick={() => navigate(path)}>
+                        <ListItemIcon>{icon}</ListItemIcon>
+                        <ListItemText primary={label} sx={{ color: "black" }} />
+                    </ListItemButton>
+                ))}
             </List>
 
             <List sx={{ mt: "auto" }}>
