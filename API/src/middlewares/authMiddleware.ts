@@ -17,15 +17,16 @@ export function authMiddleware(
     const token = req.cookies?.token;
 
     if (!token) {
-        return res.status(401).json({ error: "Token não fornecido" });
+        res.status(401).json({ error: "Token não fornecido" });
+        return; // apenas sai da função
     }
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-
         req.userId = decoded.id;
         next();
-    } catch (error) {
-        return res.status(401).json({ error: "Token inválido ou expirado" });
+    } catch (err) {
+        res.status(401).json({ error: "Token inválido ou expirado" });
+        return; // apenas sai da função
     }
 }
