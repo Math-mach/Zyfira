@@ -73,29 +73,28 @@ export async function login(req: Request, res: Response) {
 
         res.json({
             accessToken,
-            message: "Registro realizado com sucesso",
+            message: "Login realizado com sucesso",
         });
 
-        // const token = jwt.sign({ id: user.ID, email: user.email }, JWT_SECRET, {
-        //     expiresIn: "10h",
-        // });
 
-        // res.cookie(COOKIE_NAME, token, {
-        //     httpOnly: true,
-        //     sameSite: "strict",
-        //     secure: false,
-        // }).json({ token, message: "Login realizado com sucesso" });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Erro interno do servidor" });
     }
 }
 
+const REFRESH_COOKIE = "refresh_token";
+
 export function logout(req: Request, res: Response) {
-    res.clearCookie(COOKIE_NAME).json({
+    res.clearCookie(REFRESH_COOKIE, {
+        httpOnly: true,
+        sameSite: "strict",
+        secure: process.env.NODE_ENV === "production",
+    }).json({
         message: "Logout realizado com sucesso",
     });
 }
+
 
 export async function getUserProfile(req: Request, res: Response) {
     try {
