@@ -8,54 +8,40 @@ import Dashboard from "./pages/Dashboard";
 import { Sidebar } from "./components/Sidebar";
 import AssetsPage from "./pages/Assets";
 
-const isAuthenticated = () => !!localStorage.getItem("token");
+const isAuthenticated = () => !!localStorage.getItem("isAuthenticated");
 
 const App = () => {
-    return (
-        <BrowserRouter>
-            <Routes>
-                {isAuthenticated() ? (
+  return (
+    <BrowserRouter>
+      <Routes>
+        {isAuthenticated() ? (
+          <Route
+            path="*"
+            element={
+              <div style={{ display: "flex" }}>
+                <Sidebar />
+                <div style={{ flex: 1, padding: "20px" }}>
+                  <Routes>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/my-assets" element={<AssetsPage />} />
                     <Route
-                        path="*"
-                        element={
-                            <div style={{ display: "flex" }}>
-                                <Sidebar />
-                                <div style={{ flex: 1, padding: "20px" }}>
-                                    <Routes>
-                                        <Route
-                                            path="/dashboard"
-                                            element={<Dashboard />}
-                                        />
-                                        <Route
-                                            path="/my-assets"
-                                            element={<AssetsPage />}
-                                        />
-                                        <Route
-                                            path="*"
-                                            element={
-                                                <Navigate
-                                                    to="/dashboard"
-                                                    replace
-                                                />
-                                            }
-                                        />
-                                    </Routes>
-                                </div>
-                            </div>
-                        }
+                      path="*"
+                      element={<Navigate to="/dashboard" replace />}
                     />
-                ) : (
-                    <>
-                        <Route path="/login" element={<LoginForm />} />
-                        <Route
-                            path="*"
-                            element={<Navigate to="/login" replace />}
-                        />
-                    </>
-                )}
-            </Routes>
-        </BrowserRouter>
-    );
+                  </Routes>
+                </div>
+              </div>
+            }
+          />
+        ) : (
+          <>
+            <Route path="/login" element={<LoginForm />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </>
+        )}
+      </Routes>
+    </BrowserRouter>
+  );
 };
 
 export default App;
