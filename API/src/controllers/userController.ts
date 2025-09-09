@@ -3,8 +3,7 @@ import { JWT_SECRET, SALT_ROUNDS } from "../config/env";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import db from "../config/db";
-
-const COOKIE_NAME = "token";
+import { generateTokens, setRefreshTokenCookie } from "../util/auth";
 
 export async function register(req: Request, res: Response) {
     let { username, email, password } = req.body;
@@ -30,15 +29,17 @@ export async function register(req: Request, res: Response) {
 
         const user = returnUser[0];
 
-        const token = jwt.sign({ id: user.ID, email: user.email }, JWT_SECRET, {
-            expiresIn: "10h",
+        const { accessToken, refreshToken } = generateTokens({
+            id: user.ID,
+            email: user.email,
         });
 
-        res.cookie(COOKIE_NAME, token, {
-            httpOnly: true,
-            sameSite: "strict",
-            secure: false,
-        }).json({ token, message: "Registro realizado com sucesso" });
+        setRefreshTokenCookie(res, refreshToken);
+
+        res.json({
+            accessToken,
+            message: "Registro realizado com sucesso",
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Erro interno do servidor" });
