@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { JWT_SECRET, SALT_ROUNDS } from "../config/env";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload as JwtPayloadType } from "jsonwebtoken";
 import db from "../config/db";
 import { generateTokens, setRefreshTokenCookie } from "../util/auth";
 
@@ -84,6 +84,35 @@ export async function login(req: Request, res: Response) {
 }
 
 const REFRESH_COOKIE = "refresh_token";
+
+export async function refresh(req: Request, res: Response): Promise<void> {
+    try {
+        const token = req.cookies[REFRESH_COOKIE];
+        if (!token) {
+            res.status(401).json({ error: "Refresh token não encontrado" });
+            return;
+        }
+
+        let decoded: JwtPayloadType;
+        try {
+            decoded = jwt.verify(token, JWT_SECRET) as JwtPayloadType;
+        } catch (err) {
+            res.status(403).json({ error: "Refresh token inválido ou expirado" });
+            return;
+        }
+
+        const { id, email } = decoded;
+        const { accessToken, refreshToken } = generateTokens({ id, email });
+
+        setRefreshTokenCookie(res, refreshToken);
+
+        res.json({ accessToken });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Erro interno do servidor" });
+    }
+}
+
 
 export function logout(req: Request, res: Response) {
     res.clearCookie(REFRESH_COOKIE, {
