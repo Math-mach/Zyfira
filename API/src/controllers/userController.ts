@@ -64,15 +64,27 @@ export async function login(req: Request, res: Response) {
             return;
         }
 
-        const token = jwt.sign({ id: user.ID, email: user.email }, JWT_SECRET, {
-            expiresIn: "10h",
+        const { accessToken, refreshToken } = generateTokens({
+            id: user.ID,
+            email: user.email,
         });
 
-        res.cookie(COOKIE_NAME, token, {
-            httpOnly: true,
-            sameSite: "strict",
-            secure: false,
-        }).json({ token, message: "Login realizado com sucesso" });
+        setRefreshTokenCookie(res, refreshToken);
+
+        res.json({
+            accessToken,
+            message: "Registro realizado com sucesso",
+        });
+
+        // const token = jwt.sign({ id: user.ID, email: user.email }, JWT_SECRET, {
+        //     expiresIn: "10h",
+        // });
+
+        // res.cookie(COOKIE_NAME, token, {
+        //     httpOnly: true,
+        //     sameSite: "strict",
+        //     secure: false,
+        // }).json({ token, message: "Login realizado com sucesso" });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Erro interno do servidor" });
