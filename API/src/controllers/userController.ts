@@ -36,8 +36,14 @@ export async function register(req: Request, res: Response) {
 
         setRefreshTokenCookie(res, refreshToken);
 
+        res.cookie("token", accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 15 * 60 * 1000,
+        });
+
         res.json({
-            accessToken,
             message: "Registro realizado com sucesso",
         });
     } catch (err) {
@@ -71,8 +77,14 @@ export async function login(req: Request, res: Response) {
 
         setRefreshTokenCookie(res, refreshToken);
 
+        res.cookie("token", accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 15 * 60 * 1000,
+        });
+
         res.json({
-            accessToken,
             message: "Login realizado com sucesso",
         });
 
@@ -112,7 +124,6 @@ export async function refresh(req: Request, res: Response): Promise<void> {
         res.status(500).json({ error: "Erro interno do servidor" });
     }
 }
-
 
 export function logout(req: Request, res: Response) {
     res.clearCookie(REFRESH_COOKIE, {
