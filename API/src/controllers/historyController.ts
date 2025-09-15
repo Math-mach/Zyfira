@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import db from "../config/db";
 
 interface HistoryInput {
@@ -12,7 +12,8 @@ interface HistoryInput {
 
 export async function getMaintenanceHistoryByAsset(
     req: Request & { userId?: string },
-    res: Response
+    res: Response,
+    next: NextFunction
 ) {
     const { assetId } = req.params;
 
@@ -33,9 +34,8 @@ export async function getMaintenanceHistoryByAsset(
             .orderBy("maintenance_history.completed_at", "desc");
 
         if (history.length === 0) {
-            return res
-                .status(404)
-                .json({ error: "Nenhum histórico encontrado." });
+            res.status(404).json({ error: "Nenhum histórico encontrado." });
+            return;
         }
 
         res.json(history);
@@ -45,17 +45,18 @@ export async function getMaintenanceHistoryByAsset(
     }
 }
 
+
 export async function addToMaintenanceHistory(
     req: Request & { userId?: string },
-    res: Response
+    res: Response,
+    next: NextFunction
 ) {
     const { asset_id, due_date, title, condition, completed_at }: HistoryInput =
         req.body;
 
     if (!asset_id || !title) {
-        return res
-            .status(400)
-            .json({ error: "asset_id e title são obrigatórios." });
+        res.status(400).json({ error: "asset_id e title são obrigatórios." });
+        return;
     }
 
     try {
@@ -64,9 +65,10 @@ export async function addToMaintenanceHistory(
             .first();
 
         if (!asset) {
-            return res
+            res
                 .status(404)
                 .json({ error: "Ativo não encontrado ou sem permissão." });
+            return;
         }
 
         const [newHistory] = await db("maintenance_history")
@@ -75,9 +77,7 @@ export async function addToMaintenanceHistory(
                 title,
                 due_date: due_date ?? null,
                 condition: condition ?? null,
-                completed_at: completed_at
-                    ? new Date(completed_at)
-                    : new Date(),
+                completed_at: completed_at ? new Date(completed_at) : new Date(),
                 user_id: req.userId,
             })
             .returning("*");
@@ -88,3 +88,4 @@ export async function addToMaintenanceHistory(
         res.status(500).json({ error: "Erro ao adicionar ao histórico." });
     }
 }
+
