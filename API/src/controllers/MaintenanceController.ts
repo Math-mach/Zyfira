@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import db from "../config/db";
 
 export async function getAllScheduled(
@@ -20,7 +20,8 @@ export async function getAllScheduled(
 
 export async function getScheduleds(
     req: Request & { userId?: string },
-    res: Response
+    res: Response,
+    next: NextFunction
 ) {
     const { assetId } = req.params;
 
@@ -34,9 +35,8 @@ export async function getScheduleds(
             .select("scheduled_maintenances.*");
 
         if (scheduled.length === 0) {
-            return res
-                .status(404)
-                .json({ error: "Manutenção agendada não encontrada" });
+            res.status(404).json({ error: "Manutenção agendada não encontrada" });
+            return;
         }
 
         res.json(scheduled);
@@ -48,7 +48,8 @@ export async function getScheduleds(
 
 export async function getScheduledById(
     req: Request & { userId?: string },
-    res: Response
+    res: Response,
+    next: NextFunction
 ) {
     const { assetId, maintenanceId } = req.params;
 
@@ -64,9 +65,8 @@ export async function getScheduledById(
             .first();
 
         if (!scheduled) {
-            return res
-                .status(404)
-                .json({ error: "Manutenção agendada não encontrada" });
+            res.status(404).json({ error: "Manutenção agendada não encontrada" });
+            return;
         }
 
         res.json(scheduled);
@@ -78,7 +78,8 @@ export async function getScheduledById(
 
 export async function createScheduled(
     req: Request & { userId?: string },
-    res: Response
+    res: Response,
+    next: NextFunction
 ) {
     const { asset_id, title, due_date, condition } = req.body;
 
@@ -88,9 +89,8 @@ export async function createScheduled(
             .first();
 
         if (!asset) {
-            return res
-                .status(403)
-                .json({ error: "Acesso não autorizado ao ativo" });
+            res.status(403).json({ error: "Acesso não autorizado ao ativo" });
+            return;
         }
 
         const [scheduled] = await db("scheduled_maintenances")
@@ -111,7 +111,8 @@ export async function createScheduled(
 
 export async function updateScheduled(
     req: Request & { userId?: string },
-    res: Response
+    res: Response,
+    next: NextFunction
 ) {
     const { id } = req.params;
     const updates = req.body;
@@ -124,7 +125,8 @@ export async function updateScheduled(
             .first();
 
         if (!result || result.user_id !== req.userId) {
-            return res.status(403).json({ error: "Acesso negado" });
+            res.status(403).json({ error: "Acesso negado" });
+            return;
         }
 
         const [updated] = await db("scheduled_maintenances")
@@ -133,7 +135,8 @@ export async function updateScheduled(
             .returning("*");
 
         if (!updated) {
-            return res.status(404).json({ error: "Manutenção não encontrada" });
+            res.status(404).json({ error: "Manutenção não encontrada" });
+            return;
         }
 
         res.json(updated);
@@ -147,7 +150,8 @@ export async function updateScheduled(
 
 export async function deleteScheduled(
     req: Request & { userId?: string },
-    res: Response
+    res: Response,
+    next: NextFunction
 ) {
     const { id } = req.params;
 
@@ -159,9 +163,8 @@ export async function deleteScheduled(
             .del();
 
         if (!deleted) {
-            return res
-                .status(404)
-                .json({ error: "Manutenção agendada não encontrada" });
+            res.status(404).json({ error: "Manutenção agendada não encontrada" });
+            return;
         }
 
         res.status(204).send();
