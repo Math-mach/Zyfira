@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import db from "../config/db";
 
 type AuthenticatedRequest = Request & { userId?: string };
@@ -7,16 +7,20 @@ const handleError = (res: Response, message: string, status = 500) => {
     return res.status(status).json({ error: message });
 };
 
-export async function getAllAssets(req: AuthenticatedRequest, res: Response) {
+export async function getAllAssets(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
         const assets = await db("assets").where({ user_id: req.userId });
-        return res.json(assets);
-    } catch {
-        return handleError(res, "Erro ao buscar ativos");
+        res.json(assets);
+    } catch (err) {
+        handleError(res, "Erro ao buscar ativos");
     }
 }
 
-export async function getAssetById(req: AuthenticatedRequest, res: Response) {
+export async function getAssetById(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+) {
     const { id } = req.params;
 
     try {
@@ -24,15 +28,23 @@ export async function getAssetById(req: AuthenticatedRequest, res: Response) {
             .where({ id, user_id: req.userId })
             .first();
 
-        if (!asset) return handleError(res, "Ativo não encontrado", 404);
+        if (!asset) {
+            handleError(res, "Ativo não encontrado", 404);
+            return;
+        }
 
-        return res.json(asset);
+        res.json(asset);
     } catch {
-        return handleError(res, "Erro ao buscar ativo");
+        handleError(res, "Erro ao buscar ativo");
     }
 }
 
-export async function createAsset(req: AuthenticatedRequest, res: Response) {
+
+export async function createAsset(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+) {
     const { name, description } = req.body;
 
     try {
@@ -40,13 +52,17 @@ export async function createAsset(req: AuthenticatedRequest, res: Response) {
             .insert({ name, description, user_id: req.userId })
             .returning("*");
 
-        return res.status(201).json(asset);
+        res.status(201).json(asset);
     } catch {
-        return handleError(res, "Erro ao criar ativo");
+        handleError(res, "Erro ao criar ativo");
     }
 }
 
-export async function updateAsset(req: AuthenticatedRequest, res: Response) {
+export async function updateAsset(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+) {
     const { id } = req.params;
     const { name, description } = req.body;
 
@@ -56,15 +72,22 @@ export async function updateAsset(req: AuthenticatedRequest, res: Response) {
             .update({ name, description, updated_at: new Date() })
             .returning("*");
 
-        if (!updated) return handleError(res, "Ativo não encontrado", 404);
+        if (!updated) {
+            handleError(res, "Ativo não encontrado", 404);
+            return;
+        }
 
-        return res.json(updated);
+        res.json(updated);
     } catch {
-        return handleError(res, "Erro ao atualizar ativo");
+        handleError(res, "Erro ao atualizar ativo");
     }
 }
 
-export async function deleteAsset(req: AuthenticatedRequest, res: Response) {
+export async function deleteAsset(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+) {
     const { id } = req.params;
 
     try {
@@ -72,10 +95,13 @@ export async function deleteAsset(req: AuthenticatedRequest, res: Response) {
             .where({ id, user_id: req.userId })
             .del();
 
-        if (!deleted) return handleError(res, "Ativo não encontrado", 404);
+        if (!deleted) {
+            handleError(res, "Ativo não encontrado", 404);
+            return;
+        }
 
-        return res.sendStatus(204);
+        res.sendStatus(204);
     } catch {
-        return handleError(res, "Erro ao deletar ativo");
+        handleError(res, "Erro ao deletar ativo");
     }
 }
