@@ -1,13 +1,5 @@
-import React, { useEffect, useState } from "react";
-import {
-  Avatar,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemButton,
-  Box,
-} from "@mui/material";
+import { useEffect, useState } from "react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Logout from "@mui/icons-material/Logout";
 
 type User = {
@@ -16,9 +8,7 @@ type User = {
 };
 
 export default function ProfileMenu() {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [user, setUser] = useState<User | null>(null);
-  const open = Boolean(anchorEl);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -40,21 +30,7 @@ export default function ProfileMenu() {
     fetchUser();
   }, []);
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const getInitials = (name: string) => name.charAt(0).toUpperCase();
 
   const handleLogout = async () => {
     try {
@@ -70,37 +46,20 @@ export default function ProfileMenu() {
   };
 
   return (
-    <Box
-      sx={{
-        mt: "auto",
-        p: 2,
-        borderTop: "1px solid black",
-      }}
-    >
-      <ListItemButton onClick={handleClick}>
-        <ListItemIcon>
-          <Avatar sx={{ bgcolor: "purple" }} alt="Usuário">
-            {user ? getInitials(user.username) : "?"}
+    <>
+      <div className="flex flex-row items-center justify-center">
+        <div className="flex flex-row flex-3 gap-2">
+          <Avatar>
+            <AvatarFallback className="flex items-center justify-center bg-black border-2 border-white text-white font-bold">
+              {user ? getInitials(user.username) : "?"}
+            </AvatarFallback>
           </Avatar>
-        </ListItemIcon>
-        <ListItemText primary="Meu Perfil" />
-      </ListItemButton>
-
-      <Menu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        onClick={handleClose}
-        transformOrigin={{ horizontal: "left", vertical: "top" }}
-        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-      >
-        <MenuItem onClick={handleLogout}>
-          <ListItemIcon>
-            <Logout fontSize="small" />
-          </ListItemIcon>
-          Sair
-        </MenuItem>
-      </Menu>
-    </Box>
+          <h1 className="flex items-center justify-center font-bold">
+            {user ? user.username.slice(1) : "?"}
+          </h1>
+        </div>
+        <Logout className="flex-1" onClick={handleLogout} />
+      </div>
+    </>
   );
 }

@@ -5,7 +5,8 @@ import { LoginForm } from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 
 // Components
-import { Sidebar } from "./components/Sidebar";
+import { AppSidebar } from "./components/Sidebar";
+import { SidebarProvider } from "./components/ui/sidebar";
 import AssetsPage from "./pages/Assets";
 
 const isAuthenticated = () => !!localStorage.getItem("isAuthenticated");
@@ -18,19 +19,21 @@ const App = () => {
           <Route
             path="*"
             element={
-              <div style={{ display: "flex" }}>
-                <Sidebar />
-                <div style={{ flex: 1, padding: "20px" }}>
-                  <Routes>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/my-assets" element={<AssetsPage />} />
-                    <Route
-                      path="*"
-                      element={<Navigate to="/dashboard" replace />}
-                    />
-                  </Routes>
+              <SidebarProvider>
+                <div style={{ display: "flex" }}>
+                  <AppSidebar />
+                  <div style={{ flex: 1, padding: "20px" }}>
+                    <Routes>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/my-assets" element={<AssetsPage />} />
+                      <Route
+                        path="*"
+                        element={<Navigate to="/dashboard" replace />}
+                      />
+                    </Routes>
+                  </div>
                 </div>
-              </div>
+              </SidebarProvider>
             }
           />
         ) : (
