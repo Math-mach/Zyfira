@@ -1,70 +1,68 @@
 import {
-    Box,
-    List,
-    ListItem,
-    ListItemIcon,
-    ListItemText,
-    ListItemButton,
-    Typography,
-} from "@mui/material";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import AssignmentIcon from "@mui/icons-material/Assignment";
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+} from "@/components/ui/sidebar";
+import { Home, Box } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import ProfileMenu from "./ProfileMenu";
-import { useNavigate } from "react-router-dom";
 
 const navItems = [
-    {
-        label: "Início",
-        icon: <DashboardIcon sx={{ color: "#8a2be2" }} />,
-        path: "/",
-    },
-    {
-        label: "Meus Ativos",
-        icon: <AssignmentIcon sx={{ color: "#8a2be2" }} />,
-        path: "/my-assets",
-    },
+  { label: "Início", icon: <Home className="h-5 w-5" />, path: "/dashboard" },
+  {
+    label: "Meus Ativos",
+    icon: <Box className="h-5 w-5" />,
+    path: "/my-assets",
+  },
 ];
 
-export const Sidebar = () => {
-    const navigate = useNavigate();
+export const AppSidebar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    return (
-        <Box
-            sx={{
-                width: 250,
-                height: "100vh",
-                bgcolor: "rgba(0, 0, 0, 0.2)",
-                borderRight: "1px solid rgba(0, 0, 0, 0.8)",
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                backdropFilter: "blur(10px)",
-                color: "black",
-                p: 2,
-            }}
-        >
-            <List>
-                <ListItem sx={{ borderBottom: "1px solid rgba(0, 0, 0, 0.8)" }}>
-                    <Typography
-                        variant="h4"
-                        align="center"
-                        sx={{ textShadow: "0 0 8px rgba(138,43,226,0.7)" }}
-                    >
-                        Zyfira
-                    </Typography>
-                </ListItem>
+  return (
+    <Sidebar className="flex flex-col w-56  text-white">
+      {/* Header */}
+      <SidebarHeader className="bg-black flex items-center justify-between px-4 py-2 border-b border-gray-700 min-h-[3rem] !p-3">
+        <h2 className="text-2xl text-purple-200 font-bold">Zyfira</h2>
+      </SidebarHeader>
 
-                {navItems.map(({ label, icon, path }) => (
-                    <ListItemButton key={label} onClick={() => navigate(path)}>
-                        <ListItemIcon>{icon}</ListItemIcon>
-                        <ListItemText primary={label} sx={{ color: "black" }} />
-                    </ListItemButton>
-                ))}
-            </List>
+      {/* Content / Menu */}
+      <SidebarContent className="bg-black !p-3 not-visited:flex-1 overflow-y-auto !gap-1.5">
+        <SidebarGroup>
+          <SidebarMenu>
+            {navItems.map(({ label, icon, path }) => {
+              const isActive = location.pathname === path;
+              return (
+                <SidebarMenuItem key={label} className="mb-1">
+                  <SidebarMenuButton
+                    onClick={() => navigate(path)}
+                    className={`flex items-center w-full !px-2 !py-5 rounded-md transition-colors duration-500 
+                      ${
+                        isActive
+                          ? "text-blue-500 bg-gray-800"
+                          : "hover:bg-gray-300 hover:text-black"
+                      }`}
+                  >
+                    {icon}
+                    <span className="ml-2 text-lg">{label}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarContent>
 
-            <List sx={{ mt: "auto" }}>
-                <ProfileMenu />
-            </List>
-        </Box>
-    );
+      {/* Footer */}
+      <SidebarFooter className="bg-black !p-5 px-4 py-4 border-t border-gray-700">
+        <ProfileMenu />
+      </SidebarFooter>
+    </Sidebar>
+  );
 };
