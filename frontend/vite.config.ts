@@ -9,15 +9,17 @@ dotenv.config({ path: path.resolve(__dirname, "../API/.env") });
 
 export default defineConfig({
     plugins: [react(), tailwindcss()],
+    resolve: {
+        alias: {
+            "@": path.resolve(__dirname, "./src"),
+        },
+    },
     server: {
         proxy: {
             "/api": {
                 target: `http://localhost:${process.env.PORT}/`,
                 changeOrigin: true,
             },
-        },
-        alias: {
-            "@": path.resolve(__dirname, "./src"),
         },
     },
 });
